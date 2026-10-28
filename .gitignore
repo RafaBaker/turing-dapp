@@ -1,0 +1,24 @@
+
+# Dependências
+node_modules/
+
+# Hardhat
+artifacts/
+cache/
+coverage/
+coverage.json/
+typechain/
+typechain-types/
+
+# Variáveis de ambiente e credenciais
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema e editor
+.DS_Store
+.vscode/
