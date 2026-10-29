@@ -9,7 +9,6 @@ import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-
 // This is the main building block for smart contracts.
 contract Turing is ERC20{
     // Some string type variables to identify the token.
@@ -27,7 +26,9 @@ contract Turing is ERC20{
     mapping(address => string) private addresses; // Endereços que possuem usuários
 
     // Chave primária (string) => (Chave Secundária (string) => Valor Final (bool))    
-    mapping(string => mapping(string => bool)) public hasVote
+    mapping(string => mapping(string => bool)) public hasVoted;
+
+    mapping(address => uint256) private qtdVotes;
 
 
     // A mapping is a key/value map. Here we store each account balance.
@@ -97,49 +98,10 @@ contract Turing is ERC20{
         // _mint(owner, 1000000);
     }
 
-    /**
-     * A function to transfer tokens.
-     *
-     * The `external` modifier makes a function *only* callable from outside
-     * the contract.
-     */
-    // function transfer(address to, uint256 amount) external {
-    //     // Check if the transaction sender has enough tokens.
-    //     // If `require`'s first argument evaluates to `false` then the
-    //     // transaction will revert.
-    //     require(balances[msg.sender] >= amount, "Not enough tokens");
-
-    //     // We can print messages and values using console.log, a feature of
-    //     // Hardhat Network:
-    //     console.log(
-    //         "Transferring from %s to %s %s tokens",
-    //         msg.sender,
-    //         to,
-    //         amount
-    //     );
-
-    //     // Transfer the amount.
-    //     balances[msg.sender] -= amount;
-    //     balances[to] += amount;
-
-    //     // Notify off-chain applications of the transfer.
-    //     emit Transfer(msg.sender, to, amount);
-    // }
-
-    // /**
-    //  * Read only function to retrieve the token balance of a given account.
-    //  *
-    //  * The `view` modifier indicates that it doesn't modify the contract's
-    //  * state, which allows us to call it without executing a transaction.
-    //  */
-    // function balanceOf(address account) external view returns (uint256) {
-    //     return balances[account];
-    // }
-
     function updateUser(string memory codename, address user_addr) public onlyOwner{
         require(bytes(codename).length>0, "Codename nao pode estar vazio");
 
-        users["codename"] = user_addr;
+        users[codename] = user_addr;
 
         votingOn();
     }
@@ -153,10 +115,12 @@ contract Turing is ERC20{
     }
 
     function issueToken(string memory codename, uint256 qtd_de_Turings) public onlyOwner {
-        _mint(users["codename"], qtd_de_Turings);
+        _mint(users[codename], qtd_de_Turings);
     }
 
     function vote(string memory codename, uint256 qtd_de_Turings) public {
+        string memory voter = addresses[msg.sender];
+
         require(voting, "A votacao precisa estar ativa");
 
         require(users[codename] != address(0), "Pessoa nao autorizada");
@@ -165,8 +129,16 @@ contract Turing is ERC20{
 
         require(qtd_de_Turings > 0 && qtd_de_Turings <= 2, "Quantidade de turings invalida");
 
-        // Require dos votos do codename
+        require(hasVoted[voter][codename], "Usuario nao pode votar mais de uma vez");
 
-        hasVote[]
+        // Manda os turings pro codiname
+        _mint(users[codename], qtd_de_Turings);   
+        hasVoted[voter][codename] = true; // Confirma que ele ja votou no codename
+
+        // A cada 10 votos, adiciona 01 turing a quem chamou a votação 
+        qtdVotes[msg.sender]++;
+        if (qtdVotes[msg.sender] % 10 == 0) {
+            _mint(msg.sender, 1);
+        }
     }
 }
