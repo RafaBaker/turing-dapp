@@ -1,57 +1,29 @@
-//SPDX-License-Identifier: UNLICENSED
-
-// Solidity files have to start with this pragma.
-// It will be used by the Solidity compiler to validate its version.
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
-
-// We import this library to be able to use console.log
-import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-// This is the main building block for smart contracts.
-contract Turing is ERC20{
-    // Some string type variables to identify the token.
-    // string public name = "Turing";
-    // string public symbol = "TUR";
+import "hardhat/console.sol";
 
-    // // The fixed amount of tokens stored in an unsigned integer type variable.
-    // uint256 public totalSupply = 1000000;
-
-    // An address type variable is used to store ethereum accounts.
+contract Turing is ERC20 {
     address public owner;
 
-    mapping(string => address) private users; // Usuários autorizados
-
-    mapping(address => string) private addresses; // Endereços que possuem usuários
-
-    // Chave primária (string) => (Chave Secundária (string) => Valor Final (bool))    
+    mapping(string => address) public users;
+    mapping(address => string) private addresses;
     mapping(string => mapping(string => bool)) public hasVoted;
-
     mapping(address => uint256) private qtdVotes;
-
-
-    // A mapping is a key/value map. Here we store each account balance.
-    mapping(address => uint256) balances;
 
     bool private voting = true;
 
-    // The Transfer event helps off-chain aplications understand
-    // what happens within your contract.
-    // event Transfer(address indexed _from, address indexed _to, uint256 _value);
-
     modifier onlyOwner() {
-        require(msg.sender == owner || msg.sender==users["roberta"]);
+        require(
+            msg.sender == owner || msg.sender == users["roberta"],
+            "Apenas owner ou professora"
+        );
         _;
     }
 
-    /**
-     * Contract initialization.
-     */
     constructor() ERC20("Turing", "TUR") {
-        // The totalSupply is assigned to the transaction sender, which is the
-        // account that is deploying the contract.
-        // balances[msg.sender] = totalSupply;
         owner = msg.sender;
         users["roberta"] = 0x502542668aF09fa7aea52174b9965A7799343Df7;
         users["nome1"] = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
@@ -59,20 +31,6 @@ contract Turing is ERC20{
         users["nome3"] = 0x90F79bf6EB2c4f870365E785982E1f101E93b906;
         users["nome4"] = 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65;
         users["nome5"] = 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc;
-        users["nome6"] = 0x976EA74026E726554dB657fA54763abd0C3a0aa9;
-        users["nome7"] = 0x14dC79964da2C08b23698B3D3cc7Ca32193d9955;
-        users["nome8"] = 0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f;
-        users["nome9"] = 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720;
-        users["nome10"] = 0xBcd4042DE499D14e55001CcbB24a551F3b954096;
-        users["nome11"] = 0x71bE63f3384f5fb98995898A86B02Fb2426c5788;
-        users["nome12"] = 0xFABB0ac9d68B0B445fB7357272Ff202C5651694a;
-        users["nome13"] = 0x1CBd3b2770909D4e10f157cABC84C7264073C9Ec;
-        users["nome14"] = 0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097;
-        users["nome15"] = 0xcd3B766CCDd6AE721141F452C550Ca635964ce71;
-        users["nome16"] = 0x2546BcD3c84621e976D8185a91A922aE77ECEc30;
-        users["nome17"] = 0xbDA5747bFD65F08deb54cb465eB87D40e51B197E;
-        users["nome18"] = 0xdD2FD4581271e230360230F9337D5c0430Bf44C0;
-        users["nome19"] = 0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199;
 
         addresses[0x502542668aF09fa7aea52174b9965A7799343Df7] = "roberta";
         addresses[0x70997970C51812dc3A010C7d01b50e0d17dc79C8] = "nome1";
@@ -80,42 +38,33 @@ contract Turing is ERC20{
         addresses[0x90F79bf6EB2c4f870365E785982E1f101E93b906] = "nome3";
         addresses[0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65] = "nome4";
         addresses[0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc] = "nome5";
-        addresses[0x976EA74026E726554dB657fA54763abd0C3a0aa9] = "nome6";
-        addresses[0x14dC79964da2C08b23698B3D3cc7Ca32193d9955] = "nome7";
-        addresses[0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f] = "nome8";
-        addresses[0xa0Ee7A142d267C1f36714E4a8F75612F20a79720] = "nome9";
-        addresses[0xBcd4042DE499D14e55001CcbB24a551F3b954096] = "nome10";
-        addresses[0x71bE63f3384f5fb98995898A86B02Fb2426c5788] = "nome11";
-        addresses[0xFABB0ac9d68B0B445fB7357272Ff202C5651694a] = "nome12";
-        addresses[0x1CBd3b2770909D4e10f157cABC84C7264073C9Ec] = "nome13";
-        addresses[0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097] = "nome14";
-        addresses[0xcd3B766CCDd6AE721141F452C550Ca635964ce71] = "nome15";
-        addresses[0x2546BcD3c84621e976D8185a91A922aE77ECEc30] = "nome16";
-        addresses[0xbDA5747bFD65F08deb54cb465eB87D40e51B197E] = "nome17";
-        addresses[0xdD2FD4581271e230360230F9337D5c0430Bf44C0] = "nome18";
-        addresses[0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199] = "nome19";
-    
-        // _mint(owner, 1000000);
+
+        console.log("Contrato Turing criado. Owner:", owner);
     }
 
-    function updateUser(string memory codename, address user_addr) public onlyOwner{
-        require(bytes(codename).length>0, "Codename nao pode estar vazio");
+    function updateUser(string memory codename, address user_addr) public onlyOwner {
+        require(bytes(codename).length > 0, "Codename nao pode estar vazio");
 
+        delete addresses[users[codename]];
         users[codename] = user_addr;
+        addresses[user_addr] = codename;
 
-        votingOn();
+        console.log("Usuario atualizado:", codename, user_addr);
     }
 
-    function votingOn() public onlyOwner{
+    function votingOn() public onlyOwner {
         voting = true;
+        console.log("Votacao ativada por:", msg.sender);
     }
 
     function votingOff() public onlyOwner {
         voting = false;
+        console.log("Votacao pausada por:", msg.sender);
     }
 
     function issueToken(string memory codename, uint256 qtd_de_Turings) public onlyOwner {
         _mint(users[codename], qtd_de_Turings);
+        console.log("Tokens emitidos:", qtd_de_Turings, "Destinatario:", codename);
     }
 
     function vote(string memory codename, uint256 qtd_de_Turings) public {
@@ -123,22 +72,29 @@ contract Turing is ERC20{
 
         require(voting, "A votacao precisa estar ativa");
 
+        require(
+            bytes(voter).length > 0 && users[voter] == msg.sender,
+            "Pessoa nao autorizada"
+        );
+
         require(users[codename] != address(0), "Pessoa nao autorizada");
 
         require(msg.sender != users[codename], "Usuario nao pode votar em si mesmo");
 
         require(qtd_de_Turings > 0 && qtd_de_Turings <= 2, "Quantidade de turings invalida");
 
-        require(hasVoted[voter][codename], "Usuario nao pode votar mais de uma vez");
+        require(!hasVoted[voter][codename], "Usuario nao pode votar mais de uma vez");
 
-        // Manda os turings pro codiname
-        _mint(users[codename], qtd_de_Turings);   
-        hasVoted[voter][codename] = true; // Confirma que ele ja votou no codename
-
-        // A cada 10 votos, adiciona 01 turing a quem chamou a votação 
+        hasVoted[voter][codename] = true;
         qtdVotes[msg.sender]++;
+
+        _mint(users[codename], qtd_de_Turings);
+        console.log("Voto registrado:", voter, "Projeto:", codename);
+        console.log("Turings gerados pelo voto:", qtd_de_Turings);
+
         if (qtdVotes[msg.sender] % 10 == 0) {
             _mint(msg.sender, 1);
+            console.log("Recompensa de 1 Turing emitida para:", msg.sender);
         }
     }
 }
