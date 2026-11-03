@@ -1,4 +1,10 @@
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ethers } from "ethers";
 import React from "react";
 import { HARDHAT_CHAIN_ID, LOCAL_RPC_URL, POLLING_INTERVAL, TEACHER_CODENAME } from "../config";
@@ -258,127 +264,245 @@ export class Dapp extends React.Component {
     const disabled = Boolean(pendingAction || readError || networkError);
 
     return (
-      <main className="turing-app">
-        <div className="turing-shell">
-          <header className="turing-header">
-            <div>
-              <p className="turing-eyebrow">Projetos da disciplina</p>
-              <h1>{tokenData?.name || "Turing"}</h1>
-              <p>Reconheça os projetos da turma com Turings.</p>
+      <main className="min-h-svh bg-background text-foreground">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-12">
+          <header className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground">Projetos da disciplina</p>
+              <h1 className="text-4xl font-semibold tracking-tight">{tokenData?.name || "Turing"}</h1>
+              <p className="text-muted-foreground">Reconheça os projetos da turma com Turings.</p>
             </div>
-            <span className="turing-network">Hardhat · rede local</span>
+            <Badge variant="outline">Hardhat · rede local</Badge>
           </header>
 
           {!window.ethereum ? (
-            <section className="turing-card turing-welcome">
-              <h2>Conecte sua carteira para participar</h2>
-              <p>Instale uma carteira compatível com Ethereum, como MetaMask, e abra esta página novamente.</p>
-            </section>
+            <Card className="max-w-2xl">
+              <CardHeader>
+                <CardTitle role="heading" aria-level={2}>Conecte sua carteira para participar</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Instale uma carteira compatível com Ethereum, como MetaMask, e abra esta página novamente.
+                </CardDescription>
+              </CardContent>
+            </Card>
           ) : (
             <>
-              {networkError && <div className="alert alert-warning" role="alert">
-                <p>{networkError}</p>
-                <Button type="button" variant="outline" size="lg" onClick={this._switchNetwork}>Usar rede Hardhat</Button>
-              </div>}
-              {readError && <div className="alert alert-danger" role="alert">
-                <p>{readError}</p>
-                {selectedAddress && !networkError && <Button type="button" variant="outline" size="lg"
-                  onClick={() => this._initialize(selectedAddress)}>Tentar novamente</Button>}
-              </div>}
-              {!selectedAddress && <section className="turing-card turing-welcome">
-                <p className="turing-eyebrow">Votação de projetos</p>
-                <h2>Cada voto valoriza uma ideia.</h2>
-                <p>Conecte uma carteira cadastrada na rede local para votar e acompanhar o ranking da turma.</p>
-                <Button type="button" size="lg" disabled={isConnecting} aria-busy={isConnecting} onClick={this._connectWallet}>
-                  {isConnecting ? "Conectando…" : "Conectar carteira"}
-                </Button>
-              </section>}
-              {isLoading && <p className="turing-card" role="status">Consultando o contrato Turing…</p>}
+              {networkError && (
+                <Alert>
+                  <AlertTitle>Rede da carteira</AlertTitle>
+                  <AlertDescription className="flex flex-col items-start gap-3">
+                    <p>{networkError}</p>
+                    <Button type="button" variant="outline" onClick={this._switchNetwork}>
+                      Usar rede Hardhat
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              )}
+              {readError && (
+                <Alert variant="destructive">
+                  <AlertTitle>Não foi possível consultar o contrato</AlertTitle>
+                  <AlertDescription className="flex flex-col items-start gap-3 break-all">
+                    <p>{readError}</p>
+                    {selectedAddress && !networkError && (
+                      <Button type="button" variant="outline" onClick={() => this._initialize(selectedAddress)}>
+                        Tentar novamente
+                      </Button>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
+              {!selectedAddress && (
+                <Card className="max-w-2xl">
+                  <CardHeader>
+                    <CardDescription>Votação de projetos</CardDescription>
+                    <CardTitle role="heading" aria-level={2}>Cada voto valoriza uma ideia.</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p>Conecte uma carteira cadastrada na rede local para votar e acompanhar o ranking da turma.</p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button type="button" disabled={isConnecting} aria-busy={isConnecting} onClick={this._connectWallet}>
+                      {isConnecting ? "Conectando…" : "Conectar carteira"}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              )}
+              {isLoading && (
+                <Card role="status" aria-busy="true">
+                  <CardHeader>
+                    <CardTitle>Consultando o contrato Turing…</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-3" aria-hidden="true">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </CardContent>
+                </Card>
+              )}
 
-              {snapshot && <>
-                <section className="turing-account turing-card" aria-label="Sua conta">
-                  <div>
-                    <span className="turing-badge">{snapshot.isSuperuser ? "Superusuário" : snapshot.codename ? "Aluno" : "Não cadastrado"}</span>
-                    <h2>{snapshot.codename || (snapshot.isSuperuser ? "Owner" : "Carteira não cadastrada")}</h2>
-                    <p className="turing-address">{selectedAddress}</p>
+              {snapshot && (
+                <>
+                  <Card aria-label="Sua conta">
+                    <CardHeader>
+                      <Badge variant="secondary">
+                        {snapshot.isSuperuser ? "Superusuário" : snapshot.codename ? "Aluno" : "Não cadastrado"}
+                      </Badge>
+                      <CardTitle role="heading" aria-level={2}>
+                        {snapshot.codename || (snapshot.isSuperuser ? "Owner" : "Carteira não cadastrada")}
+                      </CardTitle>
+                      <CardDescription className="break-all">{selectedAddress}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <dl className="flex flex-col gap-1">
+                        <dt className="text-sm text-muted-foreground">Seu saldo</dt>
+                        <dd className="break-all text-2xl font-semibold tabular-nums">
+                          {snapshot.balance.toString()} <span className="text-sm text-muted-foreground">{tokenData.symbol}</span>
+                        </dd>
+                      </dl>
+                    </CardContent>
+                  </Card>
+
+                  <div aria-live="polite" className="flex flex-col gap-4">
+                    {pendingAction && (
+                      <Alert role="status">
+                        <AlertTitle>Transação em andamento</AlertTitle>
+                        <AlertDescription>
+                          {txBeingSent ? (
+                            <>
+                              <p>Aguardando confirmação da transação.</p>
+                              <p className="break-all">{txBeingSent}</p>
+                            </>
+                          ) : "Preparando transação. Confirme a solicitação na sua carteira."}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    {transactionError && (
+                      <Alert variant="destructive">
+                        <AlertTitle>Não foi possível concluir a operação</AlertTitle>
+                        <AlertDescription className="break-all">{transactionError}</AlertDescription>
+                      </Alert>
+                    )}
+                    {successMessage && (
+                      <Alert role="status">
+                        <AlertTitle>Operação confirmada</AlertTitle>
+                        <AlertDescription>{successMessage}</AlertDescription>
+                      </Alert>
+                    )}
                   </div>
-                  <div className="turing-balance"><span>Seu saldo</span>
-                    <strong>{snapshot.balance.toString()} <small>{tokenData.symbol}</small></strong>
-                  </div>
-                </section>
 
-                <div aria-live="polite" className="turing-feedback">
-                  {pendingAction && <div className="alert alert-info" role="status">
-                    {txBeingSent ? <>Aguardando confirmação da transação <span className="turing-hash">{txBeingSent}</span></>
-                      : "Preparando transação. Confirme a solicitação na sua carteira."}
-                  </div>}
-                  {transactionError && <div className="alert alert-danger" role="alert">{transactionError}</div>}
-                  {successMessage && <div className="alert alert-success" role="status">{successMessage}</div>}
-                </div>
+                  {!snapshot.codename && (
+                    <Alert>
+                      <AlertTitle>Cadastro para votar</AlertTitle>
+                      <AlertDescription>
+                        {snapshot.isSuperuser
+                          ? "Você pode administrar a votação, mas sua carteira precisa estar cadastrada para votar."
+                          : "Esta carteira não está cadastrada. Use uma carteira autorizada para participar da votação."}
+                      </AlertDescription>
+                    </Alert>
+                  )}
 
-                {!snapshot.codename && <p className="alert alert-warning">
-                  {snapshot.isSuperuser ? "Você pode administrar a votação, mas sua carteira precisa estar cadastrada para votar."
-                    : "Esta carteira não está cadastrada. Use uma carteira autorizada para participar da votação."}
-                </p>}
+                  <div className="grid items-start gap-6 lg:grid-cols-2">
+                    <div className="flex min-w-0 flex-col gap-6">
+                      {(snapshot.codename || snapshot.isSuperuser) && (
+                        <Card>
+                          <CardHeader>
+                            <CardDescription>Participação</CardDescription>
+                            <CardTitle role="heading" aria-level={2}>Vote em um projeto</CardTitle>
+                            <CardDescription>
+                              Seu voto cria Turings para o aluno. Você pode votar mesmo com saldo zero.
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <TuringForm isVote students={snapshot.students} selectedAddress={selectedAddress}
+                              votedCodenames={snapshot.votedCodenames} disabled={disabled || !snapshot.codename}
+                              onSubmit={(codename, amount) => this._submitTokens(true, codename, amount)} />
+                          </CardContent>
+                          <CardFooter>
+                            <CardDescription>A cada 10 votos válidos, você recebe 1 Turing de recompensa.</CardDescription>
+                          </CardFooter>
+                        </Card>
+                      )}
 
-                <div className="turing-grid">
-                  <div className="turing-actions">
-                    {(snapshot.codename || snapshot.isSuperuser) && <section className="turing-card">
-                      <p className="turing-eyebrow">Participação</p>
-                      <h2>Vote em um projeto</h2>
-                      <p>Seu voto cria Turings para o aluno. Você pode votar mesmo com saldo zero.</p>
-                      <TuringForm isVote students={snapshot.students} selectedAddress={selectedAddress}
-                        votedCodenames={snapshot.votedCodenames} disabled={disabled || !snapshot.codename}
-                        onSubmit={(codename, amount) => this._submitTokens(true, codename, amount)} />
-                      <p className="turing-footnote">A cada 10 votos válidos, você recebe 1 Turing de recompensa.</p>
-                    </section>}
-
-                    {/* Somente owner/professora recebem os controles administrativos do PDF. */}
-                    {snapshot.isSuperuser && <section className="turing-card">
-                      <p className="turing-eyebrow">Administração</p>
-                      <h2>Emitir Turings</h2>
-                      <p>Crie tokens sob demanda para um aluno da turma.</p>
-                      <TuringForm students={snapshot.students} selectedAddress={selectedAddress}
-                        votedCodenames={snapshot.votedCodenames} disabled={disabled}
-                        onSubmit={(codename, amount) => this._submitTokens(false, codename, amount)} />
-                      <div className="turing-voting-controls">
-                        <h3>Controle da votação</h3>
-                        <p>Ative a votação para aceitar votos ou pause o recebimento de novos votos.</p>
-                        <div className="turing-button-row">
-                          <Button type="button" variant="outline" size="lg" disabled={disabled} onClick={() => this._setVoting(true)}>Ativar votação</Button>
-                          <Button type="button" variant="outline" size="lg" disabled={disabled} onClick={() => this._setVoting(false)}>Pausar votação</Button>
-                        </div>
-                      </div>
-                    </section>}
-                  </div>
-
-                  <section className="turing-card turing-ranking">
-                    <p className="turing-eyebrow">Turma em destaque</p>
-                    <h2>Ranking de Turings</h2>
-                    <p>Usuários por saldo, do maior para o menor.</p>
-                    <div className="table-responsive">
-                      <table className="table">
-                        <caption className="sr-only">Ranking de usuários por quantidade de Turings</caption>
-                        <thead><tr><th scope="col">Posição</th><th scope="col">Codinome</th><th scope="col" className="text-right">TUR</th></tr></thead>
-                        <tbody>{snapshot.ranking.map((user, index) => (
-                          <tr key={user.codename} className={sameAddress(user.address, selectedAddress) ? "turing-current-user" : undefined}>
-                            <td>{index + 1}</td>
-                            <th scope="row">{user.codename}
-                              {user.codename === TEACHER_CODENAME && <small className="turing-teacher">Professora</small>}
-                            </th>
-                            <td className="text-right">{user.balance.toString()}</td>
-                          </tr>
-                        ))}</tbody>
-                      </table>
+                      {/* Somente owner/professora recebem os controles administrativos do PDF. */}
+                      {snapshot.isSuperuser && (
+                        <Card>
+                          <CardHeader>
+                            <CardDescription>Administração</CardDescription>
+                            <CardTitle role="heading" aria-level={2}>Emitir Turings</CardTitle>
+                            <CardDescription>Crie tokens sob demanda para um aluno da turma.</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <TuringForm students={snapshot.students} selectedAddress={selectedAddress}
+                              votedCodenames={snapshot.votedCodenames} disabled={disabled}
+                              onSubmit={(codename, amount) => this._submitTokens(false, codename, amount)} />
+                          </CardContent>
+                          <CardFooter className="flex-col items-stretch gap-3">
+                            <CardTitle role="heading" aria-level={3}>Controle da votação</CardTitle>
+                            <CardDescription>
+                              Ative a votação para aceitar votos ou pause o recebimento de novos votos.
+                            </CardDescription>
+                            <div className="flex flex-wrap gap-3">
+                              <Button type="button" variant="outline" disabled={disabled} onClick={() => this._setVoting(true)}>
+                                Ativar votação
+                              </Button>
+                              <Button type="button" variant="outline" disabled={disabled} onClick={() => this._setVoting(false)}>
+                                Pausar votação
+                              </Button>
+                            </div>
+                          </CardFooter>
+                        </Card>
+                      )}
                     </div>
-                    <div className="turing-supply"><span>Total emitido</span><strong>{snapshot.totalSupply.toString()} TUR</strong></div>
-                    <p className="turing-footnote">Atualização automática a cada 5 segundos e após suas transações.</p>
-                  </section>
-                </div>
-              </>}
+
+                    <Card className="min-w-0">
+                      <CardHeader>
+                        <CardDescription>Turma em destaque</CardDescription>
+                        <CardTitle role="heading" aria-level={2}>Ranking de Turings</CardTitle>
+                        <CardDescription>Usuários por saldo, do maior para o menor.</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Table>
+                          <TableCaption className="sr-only">Ranking de usuários por quantidade de Turings</TableCaption>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead scope="col">Posição</TableHead>
+                              <TableHead scope="col">Codinome</TableHead>
+                              <TableHead scope="col" className="text-right">TUR</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {snapshot.ranking.map((user, index) => (
+                              <TableRow key={user.codename}
+                                data-state={sameAddress(user.address, selectedAddress) ? "selected" : undefined}>
+                                <TableCell>{index + 1}</TableCell>
+                                <TableCell>
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    {user.codename}
+                                    {user.codename === TEACHER_CODENAME && <Badge variant="outline">Professora</Badge>}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-right tabular-nums">{user.balance.toString()}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                      <CardFooter className="flex-col items-stretch gap-3">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <span>Total emitido</span>
+                          <strong className="break-all tabular-nums">{snapshot.totalSupply.toString()} TUR</strong>
+                        </div>
+                        <CardDescription>Atualização automática a cada 5 segundos e após suas transações.</CardDescription>
+                      </CardFooter>
+                    </Card>
+                  </div>
+                </>
+              )}
             </>
           )}
-          <footer className="turing-footer">Turing · Votação dos projetos finais</footer>
+          <Separator />
+          <footer className="text-sm text-muted-foreground">Turing · Votação dos projetos finais</footer>
         </div>
       </main>
     );

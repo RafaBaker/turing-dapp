@@ -5,63 +5,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-.turing-app { min-height: 100vh; background: #f5f4ef; color: #24312d; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-.turing-shell { width: min(1120px, calc(100% - 48px)); margin: 0 auto; padding: 48px 0 20px; }
-.turing-header, .turing-account { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-.turing-header { margin-bottom: 32px; }
-.turing-header h1 { font-size: 60px; font-weight: 750; letter-spacing: -3px; margin-bottom: 8px; }
-.turing-dot { color: #ae451e; }
-.turing-header p, .turing-card p { color: #59645e; }
-.turing-app .turing-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 1.6px; font-weight: 700; color: #6b583f; margin-bottom: 12px; }
-.turing-network { background: #e7ebe0; color: #3f553c; border: 1px solid #d1d9c7; padding: 9px 14px; border-radius: 24px; font-size: 12px; white-space: nowrap; }
-.turing-card { background: #fff; border: 1px solid #e1e3dc; border-radius: 14px; padding: 28px; margin-bottom: 24px; }
-.turing-card h2 { font-size: 23px; font-weight: 650; letter-spacing: -.5px; margin-bottom: 12px; }
-.turing-card h3 { font-size: 17px; font-weight: 650; }
-.turing-welcome { padding: 48px; max-width: 760px; }
-.turing-welcome h2 { font-size: 32px; }
-.turing-welcome p { max-width: 560px; }
-.turing-welcome button { margin-top: 12px; }
-.turing-app .form-control:focus { outline: 3px solid #9e3f1b; outline-offset: 3px; box-shadow: none; border-color: #9e3f1b; }
-.turing-badge { display: inline-block; font-size: 11px; font-weight: 650; padding: 4px 9px; background: #edf1e9; color: #42553c; border-radius: 5px; margin-bottom: 12px; }
-.turing-account h2 { margin-bottom: 8px; }
-.turing-address, .turing-hash { font-family: ui-monospace, monospace; font-size: 12px; overflow-wrap: anywhere; }
-.turing-account .turing-address { margin: 0; }
-.turing-balance { text-align: right; flex-shrink: 0; }
-.turing-balance > span { display: block; font-size: 12px; color: #59645e; }
-.turing-balance strong { display: block; font-size: 34px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; max-width: 400px; }
-.turing-balance small { font-size: 14px; font-weight: 500; }
-.turing-grid { display: grid; grid-template-columns: 1.12fr 1fr; gap: 24px; align-items: start; }
-.turing-actions { min-width: 0; }
-.turing-app label { font-size: 13px; font-weight: 650; }
-.turing-app .form-control { font-size: 14px; min-height: 44px; height: auto; border-color: #cbd1c7; border-radius: 7px; }
-.turing-app .form-text { font-size: 12px; line-height: 1.7; }
-.turing-app .turing-footnote { font-size: 12px; line-height: 1.7; margin: 20px 0 0; }
-.turing-voting-controls { border-top: 1px solid #e8e9e3; margin-top: 28px; padding-top: 24px; }
-.turing-voting-controls p { font-size: 13px; }
-.turing-button-row { display: flex; flex-wrap: wrap; gap: 12px; }
-.turing-ranking { min-width: 0; }
-.turing-ranking .table { font-size: 14px; margin-bottom: 0; }
-.turing-ranking thead th { font-size: 11px; font-weight: 600; color: #59645e; border-top: 0; border-bottom: 1px solid #d9dfd2; padding: 14px 10px; }
-.turing-ranking tbody td, .turing-ranking tbody th { padding: 17px 10px; border-color: #eff0ec; font-variant-numeric: tabular-nums; }
-.turing-ranking tbody th { font-weight: 600; }
-.turing-current-user { background: #f0f4eb; }
-.turing-teacher { display: block; font-size: 11px; font-weight: 400; color: #59645e; }
-.turing-supply { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; border-top: 1px solid #d9dfd2; padding-top: 20px; margin-top: 12px; font-size: 13px; overflow-wrap: anywhere; }
-.turing-feedback .alert { overflow-wrap: anywhere; }
-.turing-hash { display: block; margin-top: 8px; }
-.turing-footer { border-top: 1px solid #dfe1d7; padding: 22px 0 10px; margin-top: 12px; color: #59645e; font-size: 12px; }
-@media (max-width: 760px) {
-  .turing-shell { width: calc(100% - 32px); padding-top: 28px; }
-  .turing-header { align-items: flex-start; flex-direction: column; gap: 8px; }
-  .turing-header h1 { font-size: 48px; }
-  .turing-grid { grid-template-columns: 1fr; gap: 0; }
-  .turing-card { padding: 22px; }
-  .turing-account { align-items: flex-start; flex-direction: column; gap: 20px; }
-  .turing-balance { text-align: left; }
-  .turing-balance strong { max-width: 100%; }
-  .turing-welcome { padding: 28px 22px; }
-}
-
 @theme inline { --font-heading: var(--font-sans); --font-sans: 'Inter Variable', sans-serif; --color-sidebar-ring: var(--sidebar-ring); --color-sidebar-border: var(--sidebar-border); --color-sidebar-accent-foreground: var(--sidebar-accent-foreground); --color-sidebar-accent: var(--sidebar-accent); --color-sidebar-primary-foreground: var(--sidebar-primary-foreground); --color-sidebar-primary: var(--sidebar-primary); --color-sidebar-foreground: var(--sidebar-foreground); --color-sidebar: var(--sidebar); --color-chart-5: var(--chart-5); --color-chart-4: var(--chart-4); --color-chart-3: var(--chart-3); --color-chart-2: var(--chart-2); --color-chart-1: var(--chart-1); --color-ring: var(--ring); --color-input: var(--input); --color-border: var(--border); --color-destructive: var(--destructive); --color-accent-foreground: var(--accent-foreground); --color-accent: var(--accent); --color-muted-foreground: var(--muted-foreground); --color-muted: var(--muted); --color-secondary-foreground: var(--secondary-foreground); --color-secondary: var(--secondary); --color-primary-foreground: var(--primary-foreground); --color-primary: var(--primary); --color-popover-foreground: var(--popover-foreground); --color-popover: var(--popover); --color-card-foreground: var(--card-foreground); --color-card: var(--card); --color-foreground: var(--foreground); --color-background: var(--background); --radius-sm: calc(var(--radius) * 0.6); --radius-md: calc(var(--radius) * 0.8); --radius-lg: var(--radius); --radius-xl: calc(var(--radius) * 1.4); --radius-2xl: calc(var(--radius) * 1.8); --radius-3xl: calc(var(--radius) * 2.2); --radius-4xl: calc(var(--radius) * 2.6); }
 
 :root { --background: oklch(1 0 0); --foreground: oklch(0.145 0 0); --card: oklch(1 0 0); --card-foreground: oklch(0.145 0 0); --popover: oklch(1 0 0); --popover-foreground: oklch(0.145 0 0); --primary: oklch(0.457 0.24 277.023); --primary-foreground: oklch(0.962 0.018 272.314); --secondary: oklch(0.967 0.001 286.375); --secondary-foreground: oklch(0.21 0.006 285.885); --muted: oklch(0.97 0 0); --muted-foreground: oklch(0.556 0 0); --accent: oklch(0.97 0 0); --accent-foreground: oklch(0.205 0 0); --destructive: oklch(0.577 0.245 27.325); --border: oklch(0.922 0 0); --input: oklch(0.922 0 0); --ring: oklch(0.708 0 0); --chart-1: oklch(0.87 0 0); --chart-2: oklch(0.556 0 0); --chart-3: oklch(0.439 0 0); --chart-4: oklch(0.371 0 0); --chart-5: oklch(0.269 0 0); --radius: 0.875rem; --sidebar: oklch(0.985 0 0); --sidebar-foreground: oklch(0.145 0 0); --sidebar-primary: oklch(0.511 0.262 276.966); --sidebar-primary-foreground: oklch(0.962 0.018 272.314); --sidebar-accent: oklch(0.97 0 0); --sidebar-accent-foreground: oklch(0.205 0 0); --sidebar-border: oklch(0.922 0 0); --sidebar-ring: oklch(0.708 0 0); }
