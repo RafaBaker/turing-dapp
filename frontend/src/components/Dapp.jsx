@@ -1,6 +1,7 @@
+import { Button } from "@/components/ui/button";
 import { ethers } from "ethers";
 import React from "react";
-import { HARDHAT_CHAIN_ID, POLLING_INTERVAL, TEACHER_CODENAME } from "../config";
+import { HARDHAT_CHAIN_ID, LOCAL_RPC_URL, POLLING_INTERVAL, TEACHER_CODENAME } from "../config";
 import TuringArtifact from "../contracts/Turing.json";
 import contractAddress from "../contracts/contract-address.json";
 import { getErrorMessage, readTuringState, sameAddress, validateQuantity } from "../turing";
@@ -58,6 +59,7 @@ export class Dapp extends React.Component {
     this._session++;
     this._stopPollingData();
     this._contract = undefined;
+    this._readContract = undefined;
     if (this._mounted) this.setState({ ...this.initialState });
   };
 
@@ -109,7 +111,7 @@ export class Dapp extends React.Component {
       await this._wallet.request({
         method: "wallet_addEthereumChain",
         params: [{ chainId: HARDHAT_CHAIN_ID, chainName: "Hardhat Local",
-          rpcUrls: ["http://127.0.0.1:8545"],
+          rpcUrls: [LOCAL_RPC_URL],
           nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 } }],
       });
       await this._wallet.request({
@@ -131,6 +133,7 @@ export class Dapp extends React.Component {
     this._stopPollingData();
     const session = ++this._session;
     this._contract = undefined;
+    this._readContract = undefined;
     this.setState({ ...this.initialState, selectedAddress, isLoading: true });
 
     try {
@@ -146,19 +149,20 @@ export class Dapp extends React.Component {
         throw new Error("Implante o contrato Turing na rede local seguindo o README do frontend.");
       }
 
-      // O frontend usa ethers v5, como o boilerplate. O script de deploy exporta
-      // o endereço e a ABI de Turing, evitando conectar por engano ao antigo Token.
-      const provider = new ethers.providers.Web3Provider(this._wallet, "any");
+      // As leituras vão direto ao nó local para acompanhar reinícios do Hardhat.
+      // A carteira continua responsável por autorizar e assinar as transações.
+      const provider = new ethers.providers.JsonRpcProvider(LOCAL_RPC_URL, contractAddress.chainId);
+      const walletProvider = new ethers.providers.Web3Provider(this._wallet, "any");
       const code = await provider.getCode(contractAddress.Turing);
       if (code === "0x") throw new Error("Contrato não encontrado. Implante Turing novamente após reiniciar a rede local.");
-      const contract = new ethers.Contract(
-        contractAddress.Turing, TuringArtifact.abi, provider.getSigner(selectedAddress),
-      );
+      const readContract = new ethers.Contract(contractAddress.Turing, TuringArtifact.abi, provider);
+      const contract = readContract.connect(walletProvider.getSigner(selectedAddress));
       const [name, symbol, snapshot] = await Promise.all([
-        contract.name(), contract.symbol(), readTuringState(contract, selectedAddress),
+        readContract.name(), readContract.symbol(), readTuringState(readContract, selectedAddress),
       ]);
       if (!this._isCurrentSession(session)) return;
       this._contract = contract;
+      this._readContract = readContract;
       this.setState({ tokenData: { name, symbol }, snapshot, isLoading: false });
       this._startPollingData(session);
     } catch (error) {
@@ -179,9 +183,9 @@ export class Dapp extends React.Component {
   _stopPollingData = () => clearTimeout(this._pollDataTimeout);
 
   _refreshData = async (session = this._session) => {
-    if (!this._contract || !this._isCurrentSession(session)) return;
+    if (!this._readContract || !this._isCurrentSession(session)) return;
     const requestId = ++this._readId;
-    const contract = this._contract;
+    const contract = this._readContract;
     const address = this.state.selectedAddress;
     try {
       const snapshot = await readTuringState(contract, address);
@@ -223,18 +227,19 @@ export class Dapp extends React.Component {
 
   _sendTransaction = async (method, args, successMessage) => {
     const session = this._session;
-    if (!this._contract || this._pendingSession === session || this.state.readError) return;
+    if (!this._contract || !this._readContract || this._pendingSession === session || this.state.readError) return;
     const contract = this._contract;
+    const readContract = this._readContract;
     this._pendingSession = session;
     this.setState({ pendingAction: method, transactionError: undefined, successMessage: undefined });
     try {
       // A simulação antecipa erros como votação pausada ou voto duplicado. A
       // transação real é validada novamente pelo contrato e exige confirmação na carteira.
-      await contract.callStatic[method](...args);
+      await readContract.callStatic[method](...args, { from: this.state.selectedAddress });
       if (!this._isCurrentSession(session)) return;
       const tx = await contract[method](...args);
       if (this._isCurrentSession(session)) this.setState({ txBeingSent: tx.hash });
-      const receipt = await tx.wait();
+      const receipt = await readContract.provider.waitForTransaction(tx.hash, 1);
       if (receipt.status === 0) throw new Error("A transação falhou. Nenhuma alteração foi aplicada.");
       if (!this._isCurrentSession(session)) return;
       this.setState({ successMessage });
@@ -258,7 +263,7 @@ export class Dapp extends React.Component {
           <header className="turing-header">
             <div>
               <p className="turing-eyebrow">Projetos da disciplina</p>
-              <h1>{tokenData?.name || "Turing"}<span className="turing-dot">.</span></h1>
+              <h1>{tokenData?.name || "Turing"}</h1>
               <p>Reconheça os projetos da turma com Turings.</p>
             </div>
             <span className="turing-network">Hardhat · rede local</span>
@@ -273,20 +278,20 @@ export class Dapp extends React.Component {
             <>
               {networkError && <div className="alert alert-warning" role="alert">
                 <p>{networkError}</p>
-                <button className="btn btn-outline-dark" onClick={this._switchNetwork}>Usar rede Hardhat</button>
+                <Button type="button" variant="outline" size="lg" onClick={this._switchNetwork}>Usar rede Hardhat</Button>
               </div>}
               {readError && <div className="alert alert-danger" role="alert">
                 <p>{readError}</p>
-                {selectedAddress && !networkError && <button className="btn btn-outline-dark"
-                  onClick={() => this._initialize(selectedAddress)}>Tentar novamente</button>}
+                {selectedAddress && !networkError && <Button type="button" variant="outline" size="lg"
+                  onClick={() => this._initialize(selectedAddress)}>Tentar novamente</Button>}
               </div>}
               {!selectedAddress && <section className="turing-card turing-welcome">
                 <p className="turing-eyebrow">Votação de projetos</p>
                 <h2>Cada voto valoriza uma ideia.</h2>
                 <p>Conecte uma carteira cadastrada na rede local para votar e acompanhar o ranking da turma.</p>
-                <button className="btn turing-primary" disabled={isConnecting} onClick={this._connectWallet}>
+                <Button type="button" size="lg" disabled={isConnecting} aria-busy={isConnecting} onClick={this._connectWallet}>
                   {isConnecting ? "Conectando…" : "Conectar carteira"}
-                </button>
+                </Button>
               </section>}
               {isLoading && <p className="turing-card" role="status">Consultando o contrato Turing…</p>}
 
@@ -340,8 +345,8 @@ export class Dapp extends React.Component {
                         <h3>Controle da votação</h3>
                         <p>Ative a votação para aceitar votos ou pause o recebimento de novos votos.</p>
                         <div className="turing-button-row">
-                          <button className="btn btn-outline-dark" disabled={disabled} onClick={() => this._setVoting(true)}>Ativar votação</button>
-                          <button className="btn btn-outline-dark" disabled={disabled} onClick={() => this._setVoting(false)}>Pausar votação</button>
+                          <Button type="button" variant="outline" size="lg" disabled={disabled} onClick={() => this._setVoting(true)}>Ativar votação</Button>
+                          <Button type="button" variant="outline" size="lg" disabled={disabled} onClick={() => this._setVoting(false)}>Pausar votação</Button>
                         </div>
                       </div>
                     </section>}

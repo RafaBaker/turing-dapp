@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { sameAddress } from "../turing";
 
 export function TuringForm({ isVote, students, selectedAddress, votedCodenames, disabled, onSubmit }) {
@@ -43,9 +44,9 @@ export function TuringForm({ isVote, students, selectedAddress, votedCodenames, 
               : "A emissão cria tokens para o aluno, sem descontar do seu saldo."}
           </small>
         </div>
-        <button className="btn turing-primary" type="submit" disabled={disabled || unavailable}>
+        <Button type="submit" size="lg" disabled={disabled || unavailable}>
           {isVote ? "Registrar voto" : "Emitir Turings"}
-        </button>
+        </Button>
       </fieldset>
     </form>
   );

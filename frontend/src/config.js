@@ -3,4 +3,5 @@
 export const STUDENT_CODENAMES = ["nome1", "nome2", "nome3", "nome4", "nome5"];
 export const TEACHER_CODENAME = "roberta";
 export const HARDHAT_CHAIN_ID = "0x7a69";
+export const LOCAL_RPC_URL = "http://127.0.0.1:8545";
 export const POLLING_INTERVAL = 5000;

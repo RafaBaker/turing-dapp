@@ -43,6 +43,8 @@ O frontend não oferece transferências nem edição de cadastro, pois essas int
 
 `src/components/Dapp.js` concentra conexão com a carteira, troca de conta/rede, carregamento dos dados e envio de transações. Os comentários explicam as regras de Turing e o ciclo das operações. `TuringForm.js` apresenta os campos de voto e emissão; `src/turing.js` consulta o contrato, ordena o ranking e valida as quantidades.
 
+Os saldos, o ranking, a simulação e a confirmação das transações são consultados diretamente no RPC local configurado em `src/config.js` (`LOCAL_RPC_URL`). A carteira autoriza e assina as transações. Assim, o ranking consulta o nó local sem depender das respostas de leitura da carteira.
+
 Um mapping Solidity não permite listar suas chaves. Por isso, `src/config.js` contém os codinomes iniciais da turma (`nome1` a `nome5`). Os endereços são sempre lidos do contrato, acompanhando alterações feitas por `updateUser`. Se forem cadastrados novos codinomes, adicione-os à lista `STUDENT_CODENAMES` nesse arquivo.
 
 As quantidades seguem exatamente a API e os testes atuais: `vote("nome2", 2)` cria duas unidades do saldo. Não há conversão com `parseEther` ou `formatEther`; saldos e quantidades usam `BigNumber` do ethers v5 para preservar a precisão. O script Hardhat usa ethers v6, conforme as dependências da raiz.
